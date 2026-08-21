@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Horloge — YouGC Academy</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     YouGC Academy — Widget Horloge
+     Palette de marque : rose #F989B3 · rose poudré #EDBFC6
+                         encre #2A1D1D · crème #F8EDEB
+     Typos de marque    : Playfair Display (titres) · Inter (texte)
+     ============================================================ */
+
+  :root{
+    --brand-pink:#F989B3;
+    --brand-blush:#EDBFC6;
+    --brand-ink:#2A1D1D;
+    --brand-cream:#F8EDEB;
+
+    --bg:transparent;
+    --time:var(--brand-pink);
+    --sub:rgba(42,29,29,.55);
+    --greet:rgba(42,29,29,.85);
+    --sig:rgba(42,29,29,.35);
+    --card-bg:transparent;
+    --card-shadow:none;
+    --card-radius:0px;
+    --card-pad:0px;
+    --time-font:"Playfair Display", "Iowan Old Style", Georgia, serif;
+    --time-weight:500;
+  }
+
+  /* Thème sombre automatique (suit le thème système, comme Notion) */
+  @media (prefers-color-scheme: dark){
+    :root[data-theme="auto"]{
+      --sub:rgba(255,255,255,.58);
+      --greet:rgba(255,255,255,.88);
+      --sig:rgba(255,255,255,.32);
+    }
+  }
+  :root[data-theme="sombre"]{
+    --sub:rgba(255,255,255,.58);
+    --greet:rgba(255,255,255,.88);
+    --sig:rgba(255,255,255,.32);
+  }
+  :root[data-theme="creme"]{
+    --card-bg:var(--brand-cream);
+    --time:var(--brand-ink);
+    --sub:rgba(42,29,29,.5);
+    --card-radius:28px;
+    --card-pad:44px 56px;
+    --card-shadow:0 24px 60px -32px rgba(42,29,29,.35);
+  }
+  :root[data-theme="rose"]{
+    --card-bg:linear-gradient(145deg,#F989B3 0%,#EDBFC6 100%);
+    --time:#FFFFFF;
+    --sub:rgba(255,255,255,.82);
+    --greet:rgba(255,255,255,.95);
+    --sig:rgba(255,255,255,.6);
+    --card-radius:28px;
+    --card-pad:44px 56px;
+    --card-shadow:0 24px 60px -32px rgba(249,137,179,.65);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg)}
+  body{
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  #fit{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+
+  #stage{
+    transform-origin:center center;
+    display:flex;flex-direction:column;align-items:center;
+    text-align:center;white-space:nowrap;
+    background:var(--card-bg);
+    border-radius:var(--card-radius);
+    padding:var(--card-pad);
+    box-shadow:var(--card-shadow);
+  }
+  :root[data-align="left"] #stage{align-items:flex-start;text-align:left}
+
+  #greet{
+    font-size:24px;font-weight:500;letter-spacing:-.01em;
+    color:var(--greet);margin-bottom:10px;
+  }
+  #greet .accent{color:var(--brand-pink)}
+  :root[data-theme="rose"] #greet .accent{color:#fff}
+
+  #time{
+    font-family:var(--time-font);
+    font-weight:var(--time-weight);
+    font-size:150px;line-height:.94;
+    letter-spacing:-.015em;
+    color:var(--time);
+    font-variant-numeric:tabular-nums lining-nums;
+    font-feature-settings:"tnum" 1,"lnum" 1;
+    display:flex;align-items:baseline;
+  }
+  :root[data-font="inter"] #time{
+    --time-font:"Inter",sans-serif;
+    font-weight:600;letter-spacing:-.045em;
+  }
+
+  #sep{
+    padding:0 .04em;
+    transform:translateY(-.02em);
+    display:inline-block;
+  }
+  :root[data-blink="1"] #sep{animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,45%{opacity:1}55%,90%{opacity:.22}100%{opacity:1}}
+
+  #ss{
+    font-size:.42em;
+    color:var(--time);opacity:.5;
+    margin-left:.14em;letter-spacing:-.01em;
+  }
+  #ap{
+    font-family:"Inter",sans-serif;
+    font-size:.17em;font-weight:600;
+    letter-spacing:.16em;text-transform:uppercase;
+    color:var(--sub);margin-left:.16em;
+  }
+
+  #date{
+    margin-top:18px;
+    font-size:17px;font-weight:500;
+    letter-spacing:.22em;text-transform:uppercase;
+    color:var(--sub);
+  }
+
+  #sig{
+    margin-top:26px;
+    font-size:11px;font-weight:600;
+    letter-spacing:.34em;text-transform:uppercase;
+    color:var(--sig);
+    display:flex;align-items:center;gap:10px;
+  }
+  #sig::before,#sig::after{
+    content:"";height:1px;width:22px;background:currentColor;opacity:.5;
+  }
+  :root[data-align="left"] #sig::before{display:none}
+
+  .hidden{display:none !important}
+
+  /* Anti-flash avant la mise à l'échelle */
+  #stage{opacity:0;transition:opacity .35s ease}
+  #stage.ready{opacity:1}
+</style>
+</head>
+<body>
+  <div id="fit">
+    <div id="stage">
+      <div id="greet" class="hidden"></div>
+      <div id="time">
+        <span id="hh">00</span><span id="sep">:</span><span id="mm">00</span><span id="ss" class="hidden">00</span><span id="ap" class="hidden"></span>
+      </div>
+      <div id="date" class="hidden"></div>
+      <div id="sig" class="hidden">YouGC Academy</div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- 1. Lecture des paramètres d'URL ----------
+  const q = new URLSearchParams(location.search);
+  const get = (k, def) => (q.has(k) ? q.get(k) : def);
+  const bool = (k, def) => {
+    const v = get(k, null);
+    if (v === null) return def;
+    return v === "1" || v === "true" || v === "oui";
+  };
+  const hex = (v) => (/^#?[0-9a-f]{3,8}$/i.test(v || "") ? (v[0] === "#" ? v : "#" + v) : null);
+
+  const cfg = {
+    tz:       get("tz", "Europe/Paris"),
+    format:   get("f", "24") === "12" ? 12 : 24,
+    seconds:  bool("s", false),
+    date:     bool("d", true),
+    greeting: bool("g", false),
+    name:     (get("n", "") || "").slice(0, 24),
+    sig:      bool("sig", false),
+    theme:    ["auto", "clair", "sombre", "creme", "rose"].includes(get("t", "auto")) ? get("t", "auto") : "auto",
+    font:     get("font", "playfair") === "inter" ? "inter" : "playfair",
+    align:    get("a", "center") === "left" ? "left" : "center",
+    blink:    bool("blink", false),
+    color:    hex(get("c", null)),
+    color2:   hex(get("c2", null)),
+    lang:     get("lang", "fr-FR"),
+    pad:      Math.max(0, Math.min(20, parseInt(get("pad", "6"), 10) || 6)) / 100,
+    max:      Math.max(0.2, Math.min(4, parseFloat(get("scale", "1")) || 1))
+  };
+
+  const root = document.documentElement;
+  root.dataset.theme = cfg.theme;
+  root.dataset.font  = cfg.font;
+  root.dataset.align = cfg.align;
+  root.dataset.blink = cfg.blink ? "1" : "0";
+  if (cfg.color)  root.style.setProperty("--time", cfg.color);
+  if (cfg.color2) { root.style.setProperty("--sub", cfg.color2); root.style.setProperty("--greet", cfg.color2); }
+
+  // ---------- 2. Éléments ----------
+  const el = {
+    stage: document.getElementById("stage"),
+    greet: document.getElementById("greet"),
+    hh: document.getElementById("hh"),
+    mm: document.getElementById("mm"),
+    ss: document.getElementById("ss"),
+    ap: document.getElementById("ap"),
+    date: document.getElementById("date"),
+    sig: document.getElementById("sig")
+  };
+
+  el.ss.classList.toggle("hidden", !cfg.seconds);
+  el.date.classList.toggle("hidden", !cfg.date);
+  el.greet.classList.toggle("hidden", !cfg.greeting);
+  el.sig.classList.toggle("hidden", !cfg.sig);
+
+  // ---------- 3. Formatage ----------
+  const partsFmt = new Intl.DateTimeFormat("en-GB", {
+    timeZone: cfg.tz, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
+  });
+  const dateFmt = new Intl.DateTimeFormat(cfg.lang, {
+    timeZone: cfg.tz, weekday: "long", day: "numeric", month: "long", year: "numeric"
+  });
+
+  function readClock() {
+    const now = new Date();
+    const p = Object.fromEntries(partsFmt.formatToParts(now).map(x => [x.type, x.value]));
+    return { h: +p.hour, m: p.minute, s: p.second, date: dateFmt.format(now) };
+  }
+
+  function greetingFor(h) {
+    if (h < 6)  return "Belle nuit";
+    if (h < 12) return "Bonjour";
+    if (h < 18) return "Bel après-midi";
+    return "Bonne soirée";
+  }
+
+  let lastSignature = "";
+
+  function render() {
+    const t = readClock();
+    let h = t.h, suffix = "";
+
+    if (cfg.format === 12) {
+      suffix = h < 12 ? "AM" : "PM";
+      h = h % 12 || 12;
+      el.hh.textContent = String(h);
+    } else {
+      el.hh.textContent = String(h).padStart(2, "0");
+    }
+
+    el.mm.textContent = t.m;
+    if (cfg.seconds) el.ss.textContent = t.s;
+
+    if (cfg.format === 12) {
+      el.ap.textContent = suffix;
+      el.ap.classList.remove("hidden");
+    }
+
+    if (cfg.date) {
+      el.date.textContent = t.date;
+    }
+
+    if (cfg.greeting) {
+      const g = greetingFor(t.h);
+      el.greet.innerHTML = cfg.name
+        ? `${g} <span class="accent">${escapeHtml(cfg.name)}</span>`
+        : g;
+    }
+
+    // On ne recalcule la mise à l'échelle que si la largeur du contenu peut avoir changé
+    const sig = [el.hh.textContent.length, el.date.textContent, el.greet.textContent].join("|");
+    if (sig !== lastSignature) {
+      lastSignature = sig;
+      fit();
+    }
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  // ---------- 4. Mise à l'échelle « fit to frame » (comportement Indify) ----------
+  function fit() {
+    el.stage.style.transform = "none";
+    const box = el.stage.getBoundingClientRect();
+    if (!box.width || !box.height) return;
+    const availW = window.innerWidth  * (1 - cfg.pad * 2);
+    const availH = window.innerHeight * (1 - cfg.pad * 2);
+    const k = Math.min(availW / box.width, availH / box.height) * cfg.max;
+    el.stage.style.transform = `scale(${k.toFixed(4)})`;
+  }
+
+  // ---------- 5. Boucle : recalage sur la seconde ----------
+  function tick() {
+    render();
+    const delay = cfg.seconds
+      ? 1000 - (Date.now() % 1000) + 20
+      : 60000 - (Date.now() % 60000) + 20;
+    setTimeout(tick, Math.min(delay, cfg.seconds ? 1000 : 60000));
+  }
+
+  window.addEventListener("resize", fit, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(document.body);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
+
+  render();
+  const start = () => { fit(); el.stage.classList.add("ready"); };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+  tick();
+})();
+</script>
+</body>
+</html>
